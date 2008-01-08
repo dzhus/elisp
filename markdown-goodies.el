@@ -39,12 +39,13 @@ REFERENCE includes square brackets, like [this]."
     "Find out whether Markdown REFERENCE is defined.
 
 REFERENCE includes square brackets, like [this]."
-  (save-excursion
-    (goto-char (point-min))
-    (catch 'found
-      (while (re-search-forward regex-reference-definition nil t)
-        (when (string= reference (match-string-no-properties 1))
-          (throw 'found t))))))
+    (let ((reference (downcase reference)))
+      (save-excursion
+        (goto-char (point-min))
+        (catch 'found
+          (while (re-search-forward regex-reference-definition nil t)
+            (when (string= reference (downcase (match-string-no-properties 1)))
+              (throw 'found t)))))))
 
 (defun markdown-get-undefined-refs ()
   "Return a list of undefined Markdown references.
