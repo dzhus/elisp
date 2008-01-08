@@ -12,6 +12,9 @@
 ;; new buffer creates an empty reference definition in the end of your
 ;; document, hitting line number (listed in parentheses after
 ;; reference name) moves you to the line reference occurs in the text.
+;;
+;; Install this by writing `(load "/path/to/markdown-goodies.el")`
+;; somewhere in your Emacs initialization file.
 
 (require 'markdown-mode)
 
