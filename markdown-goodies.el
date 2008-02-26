@@ -18,21 +18,9 @@
 
 (require 'markdown-mode)
 
+;;; Code:
 (defconst markdown-refcheck-buffer "*Undefined references for %BUFFER%*"
-  "Name of buffer which will contain a list of undefined
-  references in markdown-mode buffer named %BUFFER%.")
-
-;;;; Faster version
-(defun markdown-has-reference-definition-2 (reference)
-  "Find out whether Markdown REFERENCE is defined.
-
-REFERENCE includes square brackets, like [this]."
-  (save-excursion
-    (goto-char (point-min))
-    (re-search-forward (concat "^ \\{0,3\\}"
-                               (regexp-quote reference)
-                               ": [ ]?\\(.*?\\)\\(\"[^\"]+?\"\\)?$")
-                       nil t)))
+  "Name of buffer which will contain a list of undefined references in `markdown-mode' buffer named %BUFFER%.")
 
 ;;;; Kosher version
 (defun markdown-has-reference-definition (reference)
@@ -54,9 +42,9 @@ Result is an alist of pairs (reference . occurencies), where
 occurencies is itself another alist of pairs (label .
 line-number).
 
-For example, an alist corresponding to [Nice editor][emacs] at line 12,
-[GNU Emacs][emacs] at line 45 and [manual][elisp] at line 127 is
-((\"[emacs]\" (\"[Nice editor]\" . 12) (\"[GNU Emacs]\" . 45)) (\"[elisp]\" (\"[manual]\" . 127)))."
+For example, an alist corresponding to [Nice editor][Emacs] at line 12,
+\[GNU Emacs][Emacs] at line 45 and [manual][elisp] at line 127 is
+\((\"[emacs]\" (\"[Nice editor]\" . 12) (\"[GNU Emacs]\" . 45)) (\"[elisp]\" (\"[manual]\" . 127)))."
   (let ((missing))
     (save-excursion
       (goto-char (point-min))
@@ -68,7 +56,7 @@ For example, an alist corresponding to [Nice editor][emacs] at line 12,
           (unless (markdown-has-reference-definition target)
             (let ((entry (assoc target missing)))
               (if (not entry)
-                  (add-to-list 'missing (cons target 
+                  (add-to-list 'missing (cons target
                                               (list (cons label (line-number-at-pos)))) t)
                 (setcdr entry
                         (append (cdr entry) (list (cons label (line-number-at-pos))))))))))
@@ -113,8 +101,7 @@ references so that REF disappears from the list of those links."
             (goto-line (button-get b 'target-line))))
 
 (defun markdown-check-refs (&optional silent)
-  "Show all undefined Markdown references in current
-markdown-mode buffer.
+  "Show all undefined Markdown references in current `markdown-mode' buffer.
 
 If SILENT is non-nil, do not message anything when no undefined
 references found.
@@ -159,3 +146,6 @@ defined."
       (goto-line 4))))
 
 (define-key markdown-mode-map "\C-c\C-cc" 'markdown-check-refs)
+(provide 'markdown-goodies)
+
+;;; markdown-goodies.el ends here
