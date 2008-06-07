@@ -15,6 +15,11 @@
 ;;
 ;; Install this by writing `(load "/path/to/markdown-goodies.el")`
 ;; somewhere in your Emacs initialization file.
+;;
+;; ATTENTION: As of June 2008, reference checking functions are
+;; included in markdown-mode itself. Please DO NOT use this separate
+;; package with markdown-mode 1.6 or greater.
+
 
 (require 'markdown-mode)
 
