@@ -1,10 +1,26 @@
 ;;; markdown-goodies.el -- additional features for Emacs markdown-mode
-;;
+
+;; Copyright (C) 2007, 2008 Dmitry Dzhus
+
 ;; Author: Dmitry Dzhus <mail@sphinx.net.ru>
 ;;
-;; This software is in public domain. You may use and redistribute it
-;; any way you like. Enjoy!
-;;
+
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see
+;; <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
 ;; This package adds an additional `markdown-check-refs` function
 ;; (also available using `C-c C-c c` keybinding) to markdown-mode.
 ;; Call it interactively to see a list of all [undefined][references]
@@ -12,10 +28,10 @@
 ;; new buffer creates an empty reference definition in the end of your
 ;; document, hitting line number (listed in parentheses after
 ;; reference name) moves you to the line reference occurs in the text.
-;;
+
 ;; Install this by writing `(load "/path/to/markdown-goodies.el")`
 ;; somewhere in your Emacs initialization file.
-;;
+
 ;; ATTENTION: As of June 2008, reference checking functions are
 ;; included in markdown-mode itself. Please DO NOT use this separate
 ;; package with markdown-mode 1.6 or greater.
