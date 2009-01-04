@@ -1,8 +1,8 @@
 ;;; grok-lisp.el --- Extract or graph sources with Emacs Semantic
 
-;; Copyright (C) 2007, 2008 Dmitry Dzhus
+;; Copyright (C) 2007, 2008, 2009 Dmitry Dzhus
 
-;; Author: Dmitry Dzhus <mail@sphinx.net.ru>
+;; Author: Dmitry Dzhus <dima@sphinx.net.ru>
 ;; Keywords: lisp semantic graph
 
 ;; This program is free software: you can redistribute it and/or
@@ -21,28 +21,70 @@
 
 ;;; Commentary:
 
-;; This code is intended to be used in Emacs batch mode. It allows you
-;; to print contents of Semantic tag in file to standard output and to
-;; print dependency DOT graph of Semantic tags in a list of files. See
-;; article at http://sphinx.net.ru/blog/entry/semantic-wizardry/ (in
-;; russian).
-
-;; The following command prints source depgraph to standard output:
+;; This package is to be used in Emacs batch mode. It is based on
+;; Semantic which is a part of CEDET package.
+;;
+;; Two principal features of this package are:
+;;
+;; 1. Printing contents of a specified tag from specified source code
+;; file:
+;;
+;;     emacs --batch -l grok-lisp.el --exec '(print-tag-from-file "some-tag" "some-source.scm")' 2> /dev/null
+;;     
+;; 2. Printing DOT definition for graph of «string dependencies»
+;; between all tags defined in source code file(s):
 ;; 
-;;     emacs --batch -l grok-lisp.el --exec "(print-files-depgraph '(function) \"some-file.el\")" 2> /dev/null
+;;     emacs --batch -l grok-lisp.el --exec '(print-files-depgraph \'(function) "file1.el" "file2.el")' 2> /dev/null
 ;;
-;; This is for printing contents of arbitary tag in arbitary source file:
+;; «Tags» are high-level entities which Semantic produces when parsing
+;; source code. Tags have classes like «include» or «function».
+;; `print-files-depgraph' requires a list of tag classes to consider
+;; when building dependency graph.
 ;;
-;;     emacs --batch --l grok-lisp.el --exec '(print-tag-from-file "some-tag" "some-source.scm")' 2> /dev/null
+;; For more information on how Semantic works and its API, please
+;; execute (info "(semantic-appdef)") in your Emacs.
+;; 
+;; Under the hood, naïve approach to detecting dependencies is used:
+;; tag A is considered to be depending on B, if B is «mentioned» in
+;; the definition of A.
+;; 
+;; Redirection to /dev/null is needed in order to get rid of messages
+;; Emacs displays when loading various libraries required by this
+;; package.
+
+;; This packages utilizes Semantic DB, so file dependencies are
+;; transparently handled as fully as it's possible.
+;;
+;; CEDET is work in progress, so result may vary with sources in
+;; different languages. It may not work at all with particular set of
+;; files.
+
+;; To see what this package is actually capable of, try using it upon
+;; _its own_ source! This command will print full definition of
+;; `get-tag-deps' function:
+;; 
+;;     emacs --batch -l grok-lisp.el --exec '(print-tag-from-file "get-tag-deps" "grok-lisp.el")' 2> /dev/null
+;;
+;; You may also generate dependency graph of functions defined in this
+;; file with the following command:
+;;
+;;     emacs --batch -l grok-lisp.el --exec "(print-files-depgraph '(function) \"grok-lisp.el\")" 2> /dev/null
+
+;; Introductory article (in russian) discussing this package is
+;; available here: http://sphinx.net.ru/blog/entry/semantic-wizardry/
 
 ;; This package has been tested with Emacs Lisp and Scheme sources. It
 ;; contains a Lisp specific hack in `get-tag-deps', you may need to
 ;; tweak it in order to parse sources in other languages.
 
+;; As of January 2009, this package is fully functional with GNU Emacs
+;; and CEDET, both of CVS versions.
+
 ;;; Code:
 
 (require 'semantic)
 (require 'semanticdb)
+(require 'semanticdb-mode)
 (semanticdb-toggle-global-mode)
 
 (defun get-file-tags (file-name)
@@ -78,7 +120,7 @@ tag dependency."
     (with-current-buffer buffer
       (let (result)
         ;; cddddr is a Lisp-oriented hack to prevent tag itself from
-        ;; inclusion to dependency list
+        ;; inclusion to its own dependency list
         (dolist (lexem (cddddr (semantic-lex from to 1.0e+INF)) result)
           (if (memq (car lexem) types)
               (let* ((lexem-string (buffer-substring
@@ -91,7 +133,7 @@ tag dependency."
 
 (defun print-tag-from-file (tag-name file-name)
   "Print body of tag with TAG-NAME from FILE-NAME."
-(interactive "sTag name: \nfFile name: ")
+  (interactive "sTag name: \nfFile name: ")
   (let ((tag-table (get-file-tags file-name)))
     (princ (format "%s"
                    (get-tag-body
