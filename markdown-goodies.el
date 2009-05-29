@@ -111,7 +111,7 @@ references so that REF disappears from the list of those links."
              (button-label b) (button-get b 'target-buffer) t)))
 
 ;; Button jumping to line in buffer specified as its 'target-buffer
-;; property. Line number is button's 'line property.
+;; property. Line number is button's 'target-line property.
 (define-button-type 'goto-line-button
   'help-echo "Push to go to this line"
   'face 'italic
