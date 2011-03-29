@@ -1,6 +1,6 @@
 ;;; grok-lisp.el --- Extract or graph sources with Emacs Semantic
 
-;; Copyright (C) 2007, 2008, 2009 Dmitry Dzhus
+;; Copyright (C) 2007, 2008, 2009, 2011 Dmitry Dzhus
 
 ;; Author: Dmitry Dzhus <dima@sphinx.net.ru>
 ;; Keywords: lisp semantic graph
@@ -180,6 +180,22 @@ functions TAG depends on."
       (let ((deps (get-tag-deps tag deep-tag-table '(NAME symbol))))
         (add-to-list 'depgraph (cons tag deps) t)))))
 
+(defmacro do-for-filename-depgraphs (file-names classes &rest body)
+  "For every element of FILE-NAMES, find depgraph execute BODY.
+
+DEPGRAPHS is a list of dependency graphs generated with
+`get-file-depgraph'. The following variables may be used in BODY:
+
+IDX
+FILE-NAME
+DEPGRAPH"
+  `(let ((depgraphs (mapcar (lambda (file) (get-file-depgraph file ,classes)) ,file-names)))
+     (dolist (file-number (number-sequence 1 (length ,file-names)))
+       (let* ((idx (1- file-number))
+              (file-name (elt file-names idx))
+              (depgraph (elt depgraphs idx)))
+         ,@body))))
+
 (defun print-files-depgraph (classes &rest file-names)
   "Print depgraph with tags of CLASSES found in FILE-NAMES.
 
@@ -191,20 +207,26 @@ FILE-NAMES are source code files to search for tags in.
 
 Output format is DOT, so it's suitable for further processing
 with Graphviz tools."
-(princ "digraph D {\n")
+  (princ "digraph D {\n")
   (princ "overlap=scale;\n")
-  (dolist (file file-names)
-    (let ((depgraph (get-file-depgraph file classes)))
-      (dolist (dep-list-for-tag depgraph)
-        (let ((function-name (semantic-tag-name
-                              (car dep-list-for-tag))))
-          (princ (format "\"%s\";\n" function-name))
-          (dolist (dependency (cdr dep-list-for-tag))
-            (princ (format "\"%s\" -> \"%s\";\n"
-                           (semantic-tag-name dependency)
-                           function-name)))))))
+  (do-for-filename-depgraphs file-names classes
+                             (princ (format "subgraph cluster_%d {\n" idx))
+                             (princ (format "label=\"%s\";\n" file-name))
+                             (princ "color=lightgrey;\n")
+                             ;; List functions in current file
+                             (dolist (dep-list depgraph)
+                               (let ((function-name (semantic-tag-name (car dep-list))))
+                                 (princ (format "\"%s\";\n" function-name))))
+                             ;; Finish cluster
+                             (princ "}\n"))
+  (do-for-filename-depgraphs file-names classes
+                             (dolist (dep-list depgraph)
+                               (let ((function-name (semantic-tag-name (car dep-list))))
+                                 (dolist (dependency (cdr dep-list))
+                                   (princ (format "\"%s\" -> \"%s\";\n"
+                                                  (semantic-tag-name dependency)
+                                                  function-name))))))
   (princ "}\n"))
 
 (provide 'grok-lisp)
-
 ;;; grok-lisp.el ends here
